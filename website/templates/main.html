@@ -1,0 +1,218 @@
+{% load static %}
+<head>
+    <title>Profile</title>
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400"
+          rel="stylesheet">
+    <!-- <link href="{% static 'css/base.css' %}" rel="stylesheet"> -->
+    <meta charset="utf-8">
+</head>
+<body>
+<link rel="stylesheet" href="https://bootstraptema.ru/plugins/2015/bootstrap3/bootstrap.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+<script src="https://bootstraptema.ru/plugins/jquery/jquery-1.11.3.min.js"></script>
+<script src="https://bootstraptema.ru/plugins/2015/b-v3-3-6/bootstrap.min.js"></script>
+
+<br><br><br>
+
+<style>
+    body {
+        background: url(https://bootstraptema.ru/images/bg/bg-1.png)
+    }
+
+    #main {
+        background-color: #f2f2f2;
+        padding: 20px;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        -ms-border-radius: 4px;
+        -o-border-radius: 4px;
+        border-radius: 4px;
+        border-bottom: 4px solid #ddd;
+    }
+
+    #real-estates-detail #author img {
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -o-border-radius: 100%;
+        border-radius: 100%;
+        border: 5px solid #ecf0f1;
+        margin-bottom: 10px;
+    }
+
+    #real-estates-detail .sosmed-author i.fa {
+        width: 30px;
+        height: 30px;
+        border: 2px solid #bdc3c7;
+        color: #bdc3c7;
+        padding-top: 6px;
+        margin-top: 10px;
+    }
+
+    .panel-default .panel-heading {
+        background-color: #fff;
+    }
+
+    .application_show_div {
+        width: 400px;
+        align-items: flex-start;
+        border: 5px solid #0f8fee;
+        margin-bottom: 15px;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    #real-estates-detail .slides li img {
+        height: 450px;
+    }
+</style>
+<div class="container">
+
+
+    <div class="row" id="real-estates-detail">
+        <div class="col-lg-4 col-md-4 col-xs-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <header class="panel-title">
+                        <div class="text-center">
+                            <strong>{{ user.username }}</strong>
+                        </div>
+                    </header>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-md-8 col-xs-12">
+            <div class="panel">
+                <div class="panel-body">
+                    <ul id="myTab" class="nav nav-pills">
+                        <li class="active"><a href="#detail" data-toggle="tab">Список фильмов</a></li>
+                        <li class=""><a href="#make_application" data-toggle="tab">Добавить фильм</a></li>
+                        <li class=""><a href="#show_application" data-toggle="tab">Статистика</a></li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content">
+                        <hr>
+                        <div class="tab-pane fade active in" id="detail">
+                            <table class="table table-th-block">
+                                <tbody>
+                                {% for film in films %}
+                                    <tr>
+                                        <td class="active">{{ film.film.name }}</td>
+                                        <td>{{ film.film.duration }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="make_application">
+                            {% if check_bad %}
+                                <p class="wrong">Такого фильма нет в базе данных</p>
+                            {% endif %}
+                            <form role="form" , method="POST">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label>Название фильма</label>
+                                    <input name="title" , type="text" class="form-control rounded"
+                                           placeholder="" id="title" value="{{ bad_title }}">
+                                </div>
+                                <!--
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox"> Согласен с условиями
+                                        </label>
+                                    </div>
+                                </div> -->
+                                <div class="form-group">
+                                    <!--<button type="submit" class="btn btn-success" data-toggle="modal"
+                                            data-target="#modal-1">
+                                        Отправить
+                                    </button>-->
+                                    <button type="submit" class="btn btn-success">
+                                        Отправить
+                                    </button>
+                                </div>
+                            </form>
+                            {% if get_warning %}
+                                <div class="warning">
+                                    <p>Вы не заполнили одно из полей</p>
+                                </div>
+                            {% endif %}
+                            <!--
+                            <div class="modal" id="modal-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            {% if get_warning %}
+                                            <h4 class="modal-title">Ошибка</h4>
+                                            {% else %}
+                                            <h4 class="modal-title">Уведомление</h4>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-body">
+                                            {% if get_warning %}
+                                            <p>Вы заполнили не все поля</p>
+                                            {% else %}
+                                            <p>Заявка сохранена</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger" type="button" data-dismiss="modal">Закрыть
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            -->
+                        </div>
+                        <div class="tab-pane fade" id="show_application">
+                            <div class="panel-body">
+                                    <p>Общее время {{ all_durations }} в минутах, в часах {{ all_durations_h }}</p>
+                                <!--
+                            {% for film in films %}
+                            <div class="application_show_div">
+                                <h4>О себе</h4>
+                                <p>{{film}}</p>
+                                <h4>Могу научить</h4>
+                                <p>{{application.know}}</p>
+                                <h4>Хочу научиться</h4>
+                                <p>{{application.wont}}</p>
+                                <h4>Контакты</h4>
+                                <p>{{application.contacts}}</p>
+                                <form action="/edit/application/{{application.id}}">
+                                    <button>Редактирование</button>
+                                </form>
+                                <button type="button" class="btn btn-success" data-toggle="modal"
+                                        data-target="#modal-2">Удалить
+                                </button>
+                                <div class="modal" id="modal-2">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title">Удаление</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="/{{application.id}}/delete">
+                                                    <button>Удалить</button>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button class="btn btn-danger" type="button" data-dismiss="modal">
+                                                    Закрыть
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                <div>
+                            {% endfor %}
+                            -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

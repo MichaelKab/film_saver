@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <h1>Log-in</h1>
+</head>
+<body>
+{% block content %}
+    <form action="" method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <a href="/signup">Registration</a>
+        <p><input type="submit" value="Log-in"></p>
+    </form>
+{% endblock %}
+</body>
+</html>

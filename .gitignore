@@ -1,0 +1,10 @@
+# Created by .ignore support plugin (hsz.mobi)
+/__pycache__/
+/film_project/__pycache__/
+/website/migrations/__pycache__/
+/venv/
+/.idea/
+*.sqlite3
+/website/db.sqlte3
+website/__pycache__/
+/film_project/secr_token.py
