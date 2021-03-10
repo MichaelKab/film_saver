@@ -33,8 +33,7 @@ with open('movies.csv', "r") as csv_file:
             break
 '''
 
-import json, requests
-
+'''
 from imdby.imdb import imdb
 #for i in range(100):
 details = imdb('tt0000000')
@@ -45,3 +44,24 @@ for i in range(len(details.genre)):
 #for i in range(1000):
 details = imdb('tt4154796') ## tt4154796
 print(details)
+'''
+import imdb
+from imdby.imdb import imdb as im
+# creating instance of IMDb
+ia = imdb.IMDb()
+
+# movie name
+name = "3 idiots"
+
+# searchning the movie
+search = ia.search_movie(name)
+
+# printing the result
+for i in search:
+    print(i.movieID)
+    details = im(f'tt{i.movieID}')
+    print(details.genre)
+    #al = ia.get_movie(i.movieID)
+    #print(al, "###")
+    print(i.genre)
+    print(dir(i))
