@@ -47,21 +47,14 @@ print(details)
 '''
 import imdb
 from imdby.imdb import imdb as im
+#from imdby.imdb import imdb
 # creating instance of IMDb
 ia = imdb.IMDb()
-
-# movie name
-name = "3 idiots"
-
-# searchning the movie
+name = "Back to the Futur"
 search = ia.search_movie(name)
-
-# printing the result
 for i in search:
     print(i.movieID)
-    details = im(f'tt{i.movieID}')
-    print(details.genre)
-    #al = ia.get_movie(i.movieID)
-    #print(al, "###")
-    print(i.genre)
-    print(dir(i))
+    print(i)
+    #details = im(f'tt{i.movieID}')
+    #print(details, dir(details))
+    #print(details.title)

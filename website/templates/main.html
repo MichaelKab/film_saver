@@ -107,6 +107,17 @@
                             {% if check_bad %}
                                 <p class="wrong">Такого фильма нет в базе данных</p>
                             {% endif %}
+                            {% for el in list_find_films %}
+                                <div>
+                                    <a href="https://www.imdb.com/title/tt{{ el.id }}/">{{ el.title }}</a>
+                                    <form method="get" action="/addtitle?id={{ el.id }}">
+                                        <button type="submit">Добавить</button>
+                                    </form>
+                                    <form method="get" action="/dell/{{ el.id }}">
+                                        <button type="submit">Удалить</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
                             <form role="form" , method="POST">
                                 {% csrf_token %}
                                 <div class="form-group">
@@ -127,11 +138,32 @@
                                             data-target="#modal-1">
                                         Отправить
                                     </button>-->
-                                    <button type="submit" class="btn btn-success">
+                                    <button type="submit" class="btn btn-success" data-target="#modal-1"
+                                            data-toggle="modal">
                                         Отправить
                                     </button>
                                 </div>
                             </form>
+                            <button class="btn btn-success" data-target="#modal-1" data-toggle="modal">
+                                Чек
+                            </button>
+                            <div class="modal" id="modal-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Выбор</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Список фильмов найденных</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger" type="button" data-dismiss="modal">Закрыть
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
                             {% if get_warning %}
                                 <div class="warning">
                                     <p>Вы не заполнили одно из полей</p>
@@ -167,7 +199,7 @@
                         </div>
                         <div class="tab-pane fade" id="show_application">
                             <div class="panel-body">
-                                    <p>Общее время {{ all_durations }} в минутах, в часах {{ all_durations_h }}</p>
+                                <p>Общее время {{ all_durations }} в минутах, в часах {{ all_durations_h }}</p>
                                 <!--
                             {% for film in films %}
                             <div class="application_show_div">
