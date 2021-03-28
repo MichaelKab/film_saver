@@ -116,7 +116,7 @@ def add_vie(request, pk):
     # print(details.imdb_movie_metadata)
     # print(details.imdb_technical_spec_metadata)
     try:
-        Film.objects.get(id=film.id)
+        film = Film.objects.get(id_title=film.id_title)
         # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
         #    print("!!!!!")
     except Film.DoesNotExist:
@@ -154,8 +154,6 @@ def cr_db(request):
         duration = models.IntegerField(default=10)
         rating = models.DecimalField(max_digits=5, decimal_places=3)
     """
-    # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nirla.settings") #nirla is the name of the project
-    # print(Film.objects.all())
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     path_start = '{}'.format(cur_dir)
     with open(f'{path_start}\movies.csv', "r", encoding="utf-8") as csv_file:
