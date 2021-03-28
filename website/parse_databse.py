@@ -32,7 +32,6 @@ with open('movies.csv', "r") as csv_file:
         if index > 3:
             break
 '''
-
 '''
 from imdby.imdb import imdb
 #for i in range(100):
@@ -44,7 +43,7 @@ for i in range(len(details.genre)):
 #for i in range(1000):
 details = imdb('tt4154796') ## tt4154796
 print(details)
-'''
+
 import imdb
 from imdby.imdb import imdb as im
 #from imdby.imdb import imdb
@@ -58,3 +57,4 @@ for i in search:
     #details = im(f'tt{i.movieID}')
     #print(details, dir(details))
     #print(details.title)
+'''

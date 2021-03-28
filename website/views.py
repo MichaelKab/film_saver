@@ -1,34 +1,32 @@
 # -*- coding: utf-8 -*
+"""views"""
 import os
 import csv
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
 from django.shortcuts import render
-from django.http import HttpResponse
-from .models import *
+# from django.contrib.auth import authenticate, login
+# from django.http import HttpResponse
+# from django.http import HttpResponseNotFound
+import imdb
+from imdby.imdb import imdb as im
 from django.http import HttpResponseRedirect
-from django.http import HttpResponseNotFound
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
-import imdb
-from imdby.imdb import imdb as imdby
+from .models import *
 
 
 @login_required(login_url='/login/')
 def main(request):
-    bad_title = ""
     check_bad = False
     list_find_films = []
     list_id_films = []
-    dict_find_films = {}
     if request.method == "POST":
 
         # film = Film.objects.filter(name=request.POST.get("title"))
         """if film:
                     print(len(film), str(film))
                     if len(film) > 1:
-                        bad_title = request.POST.get("title")
                         check_bad = True
                     else:
                         print(Film_with_user.objects.get(film=film, user=request.user.id))
@@ -39,9 +37,9 @@ def main(request):
                             film_with_user.film = film
                             film_with_user.save()
                             print("TRUE", film_with_user)"""
-        ia = imdb.IMDb()
+        imdb_cl = imdb.IMDb()
         name = request.POST.get("title")
-        search = ia.search_movie(name)
+        search = imdb_cl.search_movie(name)
         print(dir(search))
         for i in search:
             print(i.movieID)
@@ -62,29 +60,28 @@ def main(request):
             # al = ia.get_movie(i.movieID)
             # print(al, "###")
             # print(i.genre)
-        # bad_title = request.POST.get("title")
         # check_bad = True
 
     user = User.objects.get(id=request.user.id)
     films = Film_with_user.objects.filter(user=user)
     all_durations = 0
-    for el in films:
-        all_durations += el.film.duration
+    for film in films:
+        all_durations += film.film.duration
         # print(el.film.name)
     all_durations_h = round(all_durations / 60, 2)
     return render(request, 'main.html', {"films": films, "all_durations": all_durations,
-                                         "check_bad": check_bad, "bad_title": bad_title,
-                                         "all_durations_h": all_durations_h, "list_find_films": list_find_films,
+                                         "check_bad": check_bad, "all_durations_h": all_durations_h,
+                                         "list_find_films": list_find_films,
                                          "list_id_films": list_id_films})
 
 
 @login_required(login_url='/login/')
-def add_vie(request, pk):
-    print(pk)
+def add_vie(request, title_id):
+    """create Film_with_user"""
+    print(title_id)
     film = Film()
-    film.id_title = pk
-    from imdby.imdb import imdb as im
-    details = im(f'tt{pk}')
+    film.id_title = title_id
+    details = im(f'tt{title_id}')
     # print(dir(details))
     film.name = details.title
     # print(details.budget, details.movie_release_year, details.film_length)
@@ -93,9 +90,8 @@ def add_vie(request, pk):
     film.rating = details.rating
     # print(details.sound_mix)
     # print("time:", details.film_length," ### ", details.runtime)
-    print(list(details.runtime))
+    # print(list(details.runtime))
     # dur_str = ''
-    ch = False
     string_runtime = details.runtime
     print(string_runtime, string_runtime.split(" "))
     list_string_duration = []
@@ -105,7 +101,7 @@ def add_vie(request, pk):
             try:
                 int(num)
                 string_duration += num
-            except:
+            except ValueError:
                 pass
         if string_duration != "":
             list_string_duration.append(int(string_duration))
@@ -128,8 +124,7 @@ def add_vie(request, pk):
         #    print("!!!!!")
     except Film_with_user.DoesNotExist:
         film_with_user = Film_with_user()
-        user = User.objects.get(id=request.user.id)
-        film_with_user.user = user
+        film_with_user.user = User.objects.get(id=request.user.id)
         film_with_user.film = film
         film_with_user.save()
     # print(details.name, details.year, dir(details))
@@ -158,7 +153,6 @@ def cr_db(request):
     path_start = '{}'.format(cur_dir)
     with open(f'{path_start}\movies.csv', "r", encoding="utf-8") as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        # print(csv_reader)
         for index, row in enumerate(csv_reader):
             try:
                 if len(Film.objects.filter(id_title=row["imdb_title_id"])) != 0:

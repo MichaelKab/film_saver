@@ -1,3 +1,4 @@
+"""Models"""
 from django.db import models
 from django.contrib.auth.models import AbstractUser, User
 
@@ -12,7 +13,6 @@ class Film(models.Model):
     duration = models.IntegerField(default=10)
     rating = models.DecimalField(max_digits=5, decimal_places=3, default=0)
 
-
     def __str__(self):
         return f"{self.name} {self.id_title}"
 
@@ -21,7 +21,5 @@ class Film_with_user(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     film = models.ForeignKey(Film, blank=True, on_delete=models.CASCADE)
 
-
     def __str__(self):
         return f"{self.user.id} {self.film.id_title}"
-
