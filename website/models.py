@@ -4,11 +4,11 @@ from django.contrib.auth.models import AbstractUser, User
 
 class Film(models.Model):
     id_title = models.CharField(max_length=100000)
-    name = models.CharField(max_length=10000)
-    year = models.CharField(max_length=10000)
-    genre = models.CharField(max_length=10000)
-    country = models.CharField(max_length=10000)
-    budget = models.CharField(max_length=10000)
+    name = models.CharField(max_length=10000, default="-")
+    year = models.CharField(max_length=10000, default="0")
+    genre = models.CharField(max_length=10000, default="-")
+    country = models.CharField(max_length=10000, default="USA")
+    budget = models.CharField(max_length=10000000, default=0)
     duration = models.IntegerField(default=10)
     rating = models.DecimalField(max_digits=5, decimal_places=3, default=0)
 

@@ -110,7 +110,7 @@
                             {% for el in list_find_films %}
                                 <div>
                                     <a href="https://www.imdb.com/title/tt{{ el.id }}/">{{ el.title }}</a>
-                                    <form method="get" action="/addtitle?id={{ el.id }}">
+                                    <form method="get" action="/addtitle/{{ el.id }}" target="_blank">
                                         <button type="submit">Добавить</button>
                                     </form>
                                     <form method="get" action="/dell/{{ el.id }}">

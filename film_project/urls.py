@@ -3,6 +3,7 @@ from website import views
 from website.views import SignUpView
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
+
 urlpatterns = [
     path('signup/', SignUpView.as_view(), name='singup'),
     path('login/', LoginView.as_view(), name='login'),

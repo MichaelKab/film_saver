@@ -23,42 +23,48 @@ def main(request):
     list_id_films = []
     dict_find_films = {}
     if request.method == "POST":
-        film = Film.objects.filter(name=request.POST.get("title"))
-        if film:
-            print(len(film), str(film))
-            if len(film) > 1:
-                bad_title = request.POST.get("title")
-                check_bad = True
-            else:
-                print(Film_with_user.objects.get(film=film, user=request.user.id))
-                if len(Film_with_user.objects.filter(film=film, user=request.user.id)) == 0:
-                    film_with_user = Film_with_user()
-                    user = User.objects.get(id=request.user.id)
-                    film_with_user.user = user
-                    film_with_user.film = film
-                    film_with_user.save()
-                    print("TRUE", film_with_user)
-        else:
-            print(12121)
-            print("#################################")
-            ia = imdb.IMDb()
-            name = request.POST.get("title")
-            search = ia.search_movie(name)
-            for i in search:
-                print(i.movieID)
-                print(i)
-                # print(dir(i))
+
+        # film = Film.objects.filter(name=request.POST.get("title"))
+        """if film:
+                    print(len(film), str(film))
+                    if len(film) > 1:
+                        bad_title = request.POST.get("title")
+                        check_bad = True
+                    else:
+                        print(Film_with_user.objects.get(film=film, user=request.user.id))
+                        if len(Film_with_user.objects.filter(film=film, user=request.user.id)) == 0:
+                            film_with_user = Film_with_user()
+                            user = User.objects.get(id=request.user.id)
+                            film_with_user.user = user
+                            film_with_user.film = film
+                            film_with_user.save()
+                            print("TRUE", film_with_user)"""
+        ia = imdb.IMDb()
+        name = request.POST.get("title")
+        search = ia.search_movie(name)
+        print(dir(search))
+        for i in search:
+            print(i.movieID)
+            print(i)
+            try:
+                Film.objects.get(id_title=i.movieID)
+                # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
+                #    print("!!!!!")
+            except Film.DoesNotExist:
                 small_dict_films = {}
                 small_dict_films.update({"id": i.movieID})
                 small_dict_films.update({"title": i})
                 list_find_films.append(small_dict_films)
-                #list_id_films.append(i.movieID)
-                # print(details.genre)
-                # al = ia.get_movie(i.movieID)
-                # print(al, "###")
-                # print(i.genre)
-            # bad_title = request.POST.get("title")
-            # check_bad = True
+                # list_id_films.append(i.movieID)
+
+            # print(dir(i))
+            # print(details.genre)
+            # al = ia.get_movie(i.movieID)
+            # print(al, "###")
+            # print(i.genre)
+        # bad_title = request.POST.get("title")
+        # check_bad = True
+
     user = User.objects.get(id=request.user.id)
     films = Film_with_user.objects.filter(user=user)
     all_durations = 0
@@ -70,13 +76,65 @@ def main(request):
                                          "check_bad": check_bad, "bad_title": bad_title,
                                          "all_durations_h": all_durations_h, "list_find_films": list_find_films,
                                          "list_id_films": list_id_films})
+
+
 @login_required(login_url='/login/')
-def add_vie(request):
-    print("###")
-    print(request )
-    print(request.get_full_path())
-    print(request.COOKIES)
-    return HttpResponseRedirect("/")
+def add_vie(request, pk):
+    print(pk)
+    film = Film()
+    film.id_title = pk
+    from imdby.imdb import imdb as im
+    details = im(f'tt{pk}')
+    # print(dir(details))
+    film.name = details.title
+    # print(details.budget, details.movie_release_year, details.film_length)
+    film.year = details.movie_release_year
+    film.budget = details.budget
+    film.rating = details.rating
+    # print(details.sound_mix)
+    # print("time:", details.film_length," ### ", details.runtime)
+    print(list(details.runtime))
+    # dur_str = ''
+    ch = False
+    string_runtime = details.runtime
+    print(string_runtime, string_runtime.split(" "))
+    list_string_duration = []
+    for elem in string_runtime.split(" "):
+        string_duration = ''
+        for num in elem:
+            try:
+                int(num)
+                string_duration += num
+            except:
+                pass
+        if string_duration != "":
+            list_string_duration.append(int(string_duration))
+    film.duration = max(list_string_duration)
+    print(list_string_duration)
+    # print(dur_str)
+    # print(" ### ", details.rating)
+    # print(details.imdb_movie_metadata)
+    # print(details.imdb_technical_spec_metadata)
+    try:
+        Film.objects.get(id=film.id)
+        # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
+        #    print("!!!!!")
+    except Film.DoesNotExist:
+        print("NO")
+        film.save()
+    try:
+        print(Film_with_user.objects.get(film=film, user=request.user.id))
+        # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
+        #    print("!!!!!")
+    except Film_with_user.DoesNotExist:
+        film_with_user = Film_with_user()
+        user = User.objects.get(id=request.user.id)
+        film_with_user.user = user
+        film_with_user.film = film
+        film_with_user.save()
+    # print(details.name, details.year, dir(details))
+    return render(request, 'add_film.html')
+
 
 class SignUpView(generic.CreateView):
     form_class = UserCreationForm
@@ -85,7 +143,6 @@ class SignUpView(generic.CreateView):
 
 
 def cr_db(request):
-    # commands djnago
     """
     class Film(models.Model):
         id_title = models.CharField(max_length=100000)
@@ -106,7 +163,6 @@ def cr_db(request):
         # print(csv_reader)
         for index, row in enumerate(csv_reader):
             try:
-                # print("$$$$$$$$$$$$")
                 if len(Film.objects.filter(id_title=row["imdb_title_id"])) != 0:
                     continue
                 # print(row)
