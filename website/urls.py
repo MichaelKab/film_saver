@@ -1,6 +1,6 @@
+from django.contrib.auth import views as authViews
 from django.urls import path
 from . import views
-from django.contrib.auth import views as authViews
 urlpatterns = [
     # path('create_database', views.cr_db, name="create"),
     path('', views.main, name="home_page"),

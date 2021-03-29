@@ -2,18 +2,18 @@
 """views"""
 import os
 import csv
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
 # from django.contrib.auth import authenticate, login
 # from django.http import HttpResponse
 # from django.http import HttpResponseNotFound
 import imdb
-from imdby.imdb import imdb as im
+from imdby.imdb import imdb as search_film_detail
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
-from .models import *
+from .models import Film, Film_with_user, User
 
 
 @login_required(login_url='/login/')
@@ -22,21 +22,6 @@ def main(request):
     list_find_films = []
     list_id_films = []
     if request.method == "POST":
-
-        # film = Film.objects.filter(name=request.POST.get("title"))
-        """if film:
-                    print(len(film), str(film))
-                    if len(film) > 1:
-                        check_bad = True
-                    else:
-                        print(Film_with_user.objects.get(film=film, user=request.user.id))
-                        if len(Film_with_user.objects.filter(film=film, user=request.user.id)) == 0:
-                            film_with_user = Film_with_user()
-                            user = User.objects.get(id=request.user.id)
-                            film_with_user.user = user
-                            film_with_user.film = film
-                            film_with_user.save()
-                            print("TRUE", film_with_user)"""
         imdb_cl = imdb.IMDb()
         name = request.POST.get("title")
         search = imdb_cl.search_movie(name)
@@ -81,7 +66,7 @@ def add_vie(request, title_id):
     print(title_id)
     film = Film()
     film.id_title = title_id
-    details = im(f'tt{title_id}')
+    details = search_film_detail(f'tt{title_id}')
     # print(dir(details))
     film.name = details.title
     # print(details.budget, details.movie_release_year, details.film_length)
@@ -151,9 +136,9 @@ def cr_db(request):
     """
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     path_start = '{}'.format(cur_dir)
-    with open(f'{path_start}\movies.csv', "r", encoding="utf-8") as csv_file:
+    with open(f'{path_start}\\movies.csv', "r", encoding="utf-8") as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        for index, row in enumerate(csv_reader):
+        for row in csv_reader:
             try:
                 if len(Film.objects.filter(id_title=row["imdb_title_id"])) != 0:
                     continue
