@@ -16,69 +16,30 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import Film, Film_with_user, User
 
 
-@login_required(login_url='/login/')
-def main(request):
-    check_bad = False
-    list_find_films = []
-    list_id_films = []
-    if request.method == "POST":
-        imdb_cl = imdb.IMDb()
-        name = request.POST.get("title")
-        search = imdb_cl.search_movie(name)
-        print(dir(search))
-        for i in search:
-            print(i.movieID)
-            print(i)
-            try:
-                Film.objects.get(id_title=i.movieID)
-                # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
-                #    print("!!!!!")
-            except Film.DoesNotExist:
-                small_dict_films = {}
-                small_dict_films.update({"id": i.movieID})
-                small_dict_films.update({"title": i})
-                list_find_films.append(small_dict_films)
-                # list_id_films.append(i.movieID)
-
-            # print(dir(i))
-            # print(details.genre)
-            # al = ia.get_movie(i.movieID)
-            # print(al, "###")
-            # print(i.genre)
-        # check_bad = True
-
-    user = User.objects.get(id=request.user.id)
-    films = Film_with_user.objects.filter(user=user)
-    all_durations = 0
-    for film in films:
-        all_durations += film.film.duration
-        # print(el.film.name)
-    all_durations_h = round(all_durations / 60, 2)
-    return render(request, 'main.html', {"films": films, "all_durations": all_durations,
-                                         "check_bad": check_bad, "all_durations_h": all_durations_h,
-                                         "list_find_films": list_find_films,
-                                         "list_id_films": list_id_films})
-
-
-@login_required(login_url='/login/')
-def add_vie(request, title_id):
-    """create Film_with_user"""
-    print(title_id)
+def add_film(title_id, request):
     film = Film()
     film.id_title = title_id
     details = search_film_detail(f'tt{title_id}')
-    # print(dir(details))
     film.name = details.title
+    # print(dir(details))
     # print(details.budget, details.movie_release_year, details.film_length)
-    film.year = details.movie_release_year
-    film.budget = details.budget
+    # print(details.movie_release_year, details.released_dates)
+    if details.movie_release_year is None:
+        # print(details.released_dates)
+        film.year = details.released_dates[0].split()[-1]
+    else:
+        film.year = details.movie_release_year
+    if details.budget is None:
+        film.budget = 0
+    else:
+        film.budget = details.budget
     film.rating = details.rating
     # print(details.sound_mix)
     # print("time:", details.film_length," ### ", details.runtime)
     # print(list(details.runtime))
     # dur_str = ''
+    # print(string_runtime, string_runtime.split(" "))
     string_runtime = details.runtime
-    print(string_runtime, string_runtime.split(" "))
     list_string_duration = []
     for elem in string_runtime.split(" "):
         string_duration = ''
@@ -91,7 +52,7 @@ def add_vie(request, title_id):
         if string_duration != "":
             list_string_duration.append(int(string_duration))
     film.duration = max(list_string_duration)
-    print(list_string_duration)
+    # print(list_string_duration)
     # print(dur_str)
     # print(" ### ", details.rating)
     # print(details.imdb_movie_metadata)
@@ -101,10 +62,10 @@ def add_vie(request, title_id):
         # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
         #    print("!!!!!")
     except Film.DoesNotExist:
-        print("NO")
+        #print("NO")
         film.save()
     try:
-        print(Film_with_user.objects.get(film=film, user=request.user.id))
+        Film_with_user.objects.get(film=film, user=request.user.id)
         # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
         #    print("!!!!!")
     except Film_with_user.DoesNotExist:
@@ -112,8 +73,63 @@ def add_vie(request, title_id):
         film_with_user.user = User.objects.get(id=request.user.id)
         film_with_user.film = film
         film_with_user.save()
-    # print(details.name, details.year, dir(details))
-    return render(request, 'add_film.html')
+
+
+@login_required(login_url='/login/')
+def main(request):
+    check_bad = False
+    list_find_films = []
+    list_id_films = []
+    if request.method == "POST":
+        print(request.POST.get("add_film"))
+        if request.POST.get("add_film") is not None:
+            title_id = request.POST.get("add_film")
+            add_film(title_id, request)
+            user = User.objects.get(id=request.user.id)
+            print(request.POST.get("add_film"))
+            films = Film_with_user.objects.filter(user=user)
+            all_durations = 0
+            for film in films:
+                all_durations += film.film.duration
+            all_durations_h = round(all_durations / 60, 2)
+            return render(request, 'main.html',
+                          {"all_durations_h": all_durations_h, "films": films,
+                           "all_durations": all_durations})
+        if request.POST.get("del_film") is not None:
+            title_id = request.POST.get("del_film")
+            user = User.objects.get(id=request.user.id)
+            film = Film.objects.get(id_title=title_id)
+            film_user = Film_with_user.objects.get(user=user, film=film)
+            film_user.delete()
+        if request.POST.get("title") is not None:
+            imdb_cl = imdb.IMDb()
+            name = request.POST.get("title")
+            search = imdb_cl.search_movie(name)
+            # print(dir(search))
+            for i in search:
+                try:
+                    # film = Film.objects.get(id_title=i.movieID)
+                    small_dict_films = {}
+                    small_dict_films.update({"id": i.movieID})
+                    small_dict_films.update({"title": i})
+                    list_find_films.append(small_dict_films)
+                except Film.DoesNotExist:
+                    small_dict_films = {}
+                    small_dict_films.update({"id": i.movieID})
+                    small_dict_films.update({"title": i})
+                    list_find_films.append(small_dict_films)
+
+    user = User.objects.get(id=request.user.id)
+    films = Film_with_user.objects.filter(user=user)
+    all_durations = 0
+    all_durations_h = 0
+    for film in films:
+        all_durations += film.film.duration
+    all_durations_h = round(all_durations / 60, 2)
+    return render(request, 'main.html', {"films": films, "all_durations": all_durations,
+                                         "check_bad": check_bad, "all_durations_h": all_durations_h,
+                                         "list_find_films": list_find_films,
+                                         "list_id_films": list_id_films})
 
 
 class SignUpView(generic.CreateView):

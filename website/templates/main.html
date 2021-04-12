@@ -101,6 +101,11 @@
                                     <tr>
                                         <td class="active">{{ film.film.name }}</td>
                                         <td>{{ film.film.duration }}</td>
+                                        <td>
+                                            <button onclick="document.getElementById('del_film').value='{{ film.film.id_title }}'"
+                                                    form="dell_film_form">Удалить
+                                            </button>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
@@ -110,17 +115,22 @@
                             {% if check_bad %}
                                 <p class="wrong">Такого фильма нет в базе данных</p>
                             {% endif %}
+                            <form role="form" method="POST" id='add_film_form'>
+                                {% csrf_token %}
+                                <input type="hidden" id="add_film" name="add_film"/>
+                            </form>
                             {% for el in list_find_films %}
                                 <div>
                                     <a href="https://www.imdb.com/title/tt{{ el.id }}/">{{ el.title }}</a>
-                                    <form method="get" action="/addtitle/{{ el.id }}" target="_blank">
-                                        <button type="submit">Добавить</button>
-                                    </form>
-                                    <form method="get" action="/dell/{{ el.id }}">
-                                        <button type="submit">Удалить</button>
-                                    </form>
+                                    <div><button onclick="document.getElementById('add_film').value='{{ el.id }}'"
+                                            form="add_film_form">Добавить
+                                    </button></div>
                                 </div>
                             {% endfor %}
+                            <form role="form" method="POST" id='dell_film_form'>
+                                {% csrf_token %}
+                                <input type="hidden" id="del_film" name="del_film"/>
+                            </form>
                             <form role="form" , method="POST">
                                 {% csrf_token %}
                                 <div class="form-group">
@@ -147,9 +157,6 @@
                                     </button>
                                 </div>
                             </form>
-                            <button class="btn btn-success" data-target="#modal-1" data-toggle="modal">
-                                Чек
-                            </button>
                             <div class="modal" id="modal-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -203,46 +210,6 @@
                         <div class="tab-pane fade" id="show_application">
                             <div class="panel-body">
                                 <p>Общее время {{ all_durations }} в минутах, в часах {{ all_durations_h }}</p>
-                                <!--
-                            {% for film in films %}
-                            <div class="application_show_div">
-                                <h4>О себе</h4>
-                                <p>{{film}}</p>
-                                <h4>Могу научить</h4>
-                                <p>{{application.know}}</p>
-                                <h4>Хочу научиться</h4>
-                                <p>{{application.wont}}</p>
-                                <h4>Контакты</h4>
-                                <p>{{application.contacts}}</p>
-                                <form action="/edit/application/{{application.id}}">
-                                    <button>Редактирование</button>
-                                </form>
-                                <button type="button" class="btn btn-success" data-toggle="modal"
-                                        data-target="#modal-2">Удалить
-                                </button>
-                                <div class="modal" id="modal-2">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h4 class="modal-title">Удаление</h4>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form action="/{{application.id}}/delete">
-                                                    <button>Удалить</button>
-                                                </form>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button class="btn btn-danger" type="button" data-dismiss="modal">
-                                                    Закрыть
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                                <div>
-                            {% endfor %}
-                            -->
                             </div>
                         </div>
                     </div>
