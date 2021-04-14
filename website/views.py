@@ -17,57 +17,54 @@ from .models import Film, Film_with_user, User
 
 
 def add_film(title_id, request):
-    film = Film()
-    film.id_title = title_id
-    details = search_film_detail(f'tt{title_id}')
-    film.name = details.title
-    # print(dir(details))
-    # print(details.budget, details.movie_release_year, details.film_length)
-    # print(details.movie_release_year, details.released_dates)
-    if details.movie_release_year is None:
-        # print(details.released_dates)
-        film.year = details.released_dates[0].split()[-1]
-    else:
-        film.year = details.movie_release_year
-    if details.budget is None:
-        film.budget = 0
-    else:
-        film.budget = details.budget
-    film.rating = details.rating
-    # print(details.sound_mix)
-    # print("time:", details.film_length," ### ", details.runtime)
-    # print(list(details.runtime))
-    # dur_str = ''
-    # print(string_runtime, string_runtime.split(" "))
-    string_runtime = details.runtime
-    list_string_duration = []
-    for elem in string_runtime.split(" "):
-        string_duration = ''
-        for num in elem:
-            try:
-                int(num)
-                string_duration += num
-            except ValueError:
-                pass
-        if string_duration != "":
-            list_string_duration.append(int(string_duration))
-    film.duration = max(list_string_duration)
-    # print(list_string_duration)
-    # print(dur_str)
-    # print(" ### ", details.rating)
-    # print(details.imdb_movie_metadata)
-    # print(details.imdb_technical_spec_metadata)
     try:
-        film = Film.objects.get(id_title=film.id_title)
-        # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
-        #    print("!!!!!")
+        film = Film.objects.get(id_title=title_id)
     except Film.DoesNotExist:
-        #print("NO")
+        film = Film()
+        film.id_title = title_id
+        details = search_film_detail(f'tt{title_id}')
+        film.name = details.title
+        # print(dir(details))
+        if details.movie_release_year is None:
+            film.year = details.released_dates[0].split()[-1]
+        else:
+            film.year = details.movie_release_year
+        if details.budget is None:
+            film.budget = 0
+        else:
+            film.budget = details.budget
+        film.rating = details.rating
+        # print(details.sound_mix)
+        # print("time:", details.film_length," ### ", details.runtime)
+        print(list(details.runtime), details.runtime)
+        string_runtime = details.runtime
+        list_string_duration = []
+        for elem in string_runtime.split(" "):
+            string_duration = ''
+            for num in elem:
+                try:
+                    int(num)
+                    string_duration += num
+                except ValueError:
+                    pass
+            if string_duration != "":
+                list_string_duration.append(int(string_duration))
+        if "episodes" in string_runtime:
+            print("!!!")
+            print(int(list_string_duration[0]) * int(list_string_duration[1]))
+            film.duration = int(list_string_duration[0]) * int(list_string_duration[1])
+        else:
+            film.duration = max(list_string_duration)
+        print(list_string_duration)
+        # print(dur_str)
+        # print(" ### ", details.rating)
+        # print(details.imdb_movie_metadata)
+        # print(details.imdb_technical_spec_metadata)
         film.save()
     try:
         Film_with_user.objects.get(film=film, user=request.user.id)
         # if len(Film_with_user.objects.get(film=film, user=request.user.id)):
-        #    print("!!!!!")
+
     except Film_with_user.DoesNotExist:
         film_with_user = Film_with_user()
         film_with_user.user = User.objects.get(id=request.user.id)
@@ -108,7 +105,6 @@ def main(request):
             # print(dir(search))
             for i in search:
                 try:
-                    # film = Film.objects.get(id_title=i.movieID)
                     small_dict_films = {}
                     small_dict_films.update({"id": i.movieID})
                     small_dict_films.update({"title": i})
