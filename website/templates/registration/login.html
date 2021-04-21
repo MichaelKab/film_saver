@@ -1,17 +1,166 @@
 <!DOCTYPE html>
+<style>
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        clip-path: inset(50%);
+        border: 0
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+    }
+
+    html, body {
+        height: 100%;
+    }
+    body {
+        display: -ms-flexbox;
+        display: -webkit-box;
+        display: flex;
+        -ms-flex-align: center;
+        -ms-flex-pack: center;
+        -webkit-box-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        justify-content: center;
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
+    }
+
+    .form-signin {
+        width: 100%;
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+        position: absolute;
+        top: 15px;
+    }
+
+    .form-signin .form-control {
+        position: relative;
+        box-sizing: border-box;
+        height: auto;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .form-signin input[type="email"] {
+        margin-bottom: -1px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+
+    }
+
+    .form-signin input[type="password"] {
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .btn {
+        margin-top: 10px;
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        border: 1px solid transparent;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        border-radius: .25rem;
+        color: #fff;
+        background-color: #007bff;
+        width: 100%;
+        transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out
+    }
+
+    .mb-3 {
+        font-weight: 400 !important;
+        margin-bottom: 1rem !important;
+        font-size: 1.75rem;
+        text-align: center !important;
+
+    }
+
+    /* заголовок*/
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+    }
+
+    .form-signin {
+        width: 100%;
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .url_red {
+        font-size: 19px;
+        margin-left: 2px;
+        font-weight: normal;
+        line-height: 1;
+        color: black;
+    }
+</style>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <h1>Log-in</h1>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
 </head>
-<body>
-{% block content %}
-    <form action="" method="post">
-        {{ form.as_p }}
-        {% csrf_token %}
-        <a href="/signup">Registration</a>
-        <p><input type="submit" value="Log-in"></p>
-    </form>
-{% endblock %}
-</body>
+
+<form class="form-signin" method="post">
+    {% csrf_token %}
+    <h1 class="h3 mb-3 font-weight-normal">Log in</h1>
+    <label for="inputEmail" class="sr-only">Email address</label>
+    <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150"
+           required="" id="id_username"
+           placeholder="username" class="form-control">
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="id_password" class="form-control" placeholder="Password" required=""
+           autocomplete="current-password" name="password">
+    <!--<div class="checkbox mb-3">
+      <label>
+        <input type="checkbox" value="remember-me"> Remember me
+      </label>
+    </div>-->
+    <a href="/signup" class="url_red">Registration</a>
+    <button class="btn" type="submit">Log in</button>
+</form>
+
 </html>
