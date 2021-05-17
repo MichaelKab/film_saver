@@ -12,6 +12,8 @@ class Film(models.Model):
     budget = models.CharField(max_length=10000000, default=0)
     duration = models.IntegerField(default=10)
     rating = models.DecimalField(max_digits=5, decimal_places=3, default=0)
+    is_serial = models.BooleanField(default=False)
+    episodes = models.CharField(max_length=10000000, default=0)
 
     def __str__(self):
         return f"{self.name} {self.id_title}"

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 """views"""
 import os
+import requests
 import csv
 # from django.contrib.auth import authenticate, login
 # from django.http import HttpResponse
@@ -23,6 +24,8 @@ def add_film(title_id, request):
         film = Film()
         film.id_title = title_id
         details = search_film_detail(f'tt{title_id}')
+        if details.movie_release_year is None and details.released_dates is None:
+            return 0
         film.name = details.title
         # print(dir(details))
         if details.movie_release_year is None:
@@ -39,6 +42,7 @@ def add_film(title_id, request):
         print(list(details.runtime), details.runtime)
         string_runtime = details.runtime
         list_string_duration = []
+        print(string_runtime)
         for elem in string_runtime.split(" "):
             string_duration = ''
             for num in elem:
@@ -51,6 +55,8 @@ def add_film(title_id, request):
                 list_string_duration.append(int(string_duration))
         if "episodes" in string_runtime:
             print("!!!")
+
+            print(string_runtime, string_duration.split("episodes"))
             print(int(list_string_duration[0]) * int(list_string_duration[1]))
             film.duration = int(list_string_duration[0]) * int(list_string_duration[1])
         else:
@@ -104,21 +110,15 @@ def main(request):
             search = imdb_cl.search_movie(name)
             # print(dir(search))
             for i in search:
-                try:
+                page = requests.get(f'https://www.imdb.com/title/tt{i.movieID}/')
+                if "Runtime" in page.text:
                     small_dict_films = {}
                     small_dict_films.update({"id": i.movieID})
                     small_dict_films.update({"title": i})
                     list_find_films.append(small_dict_films)
-                except Film.DoesNotExist:
-                    small_dict_films = {}
-                    small_dict_films.update({"id": i.movieID})
-                    small_dict_films.update({"title": i})
-                    list_find_films.append(small_dict_films)
-
     user = User.objects.get(id=request.user.id)
     films = Film_with_user.objects.filter(user=user)
     all_durations = 0
-    all_durations_h = 0
     for film in films:
         all_durations += film.film.duration
     all_durations_h = round(all_durations / 60, 2)
