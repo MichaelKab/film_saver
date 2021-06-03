@@ -65,6 +65,85 @@
     #real-estates-detail .slides li img {
         height: 450px;
     }
+
+    .movie-snippet {
+        padding: 16px;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        font-size: 14px;
+        line-height: 17px;
+    }
+
+    /*############################*/
+    .movie-snippet {
+        border-top: 1px solid #e1e1e1;
+    }
+
+    .movie-snippet__image-wrap {
+        margin-right: 15px;
+        width: 60px;
+    }
+
+    .movie-snippet__title {
+        font-size: 25px;
+        font-weight: bold;
+        line-height: 17px;
+        margin-bottom: 10px
+    }
+
+    .movie-snippet__original-title {
+        display: inline;
+        font-size: 20px;
+        font-weight: normal;
+        margin-right: 6px;
+    }
+
+    .movie-snippet__rating-value {
+        color: #999;
+        font-weight: bold;
+    }
+
+    .movie-snippet__description, .movie-snippet__year, .movie-snippet__rating-votes {
+        margin-top: 5px;
+        color: #9b9b9b;
+        font-size: 20px;
+        line-height: 14px;
+    }
+
+    .movie-snippet__subtitle {
+        margin-top: 10px;
+    }
+
+    img {
+        width: 200px;
+        height: 300px;
+        margin-right: 5px;
+    }
+
+    .btn2 {
+        margin-top: 15px;
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        border: 1px solid transparent;
+        padding: .375rem .75rem;
+        font-size: 2rem;
+        line-height: 1.5;
+        border-radius: .25rem;
+        color: #fff;
+        background-color: #0f8fee;
+        width: 150px;
+        height: 36px;
+        transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
 </style>
 <div class="container">
 
@@ -119,12 +198,28 @@
                                 {% csrf_token %}
                                 <input type="hidden" id="add_film" name="add_film"/>
                             </form>
+
                             {% for el in list_find_films %}
-                                <div>
-                                    <a href="https://www.imdb.com/title/tt{{ el.id }}/">{{ el.title }}</a>
-                                    <div><button onclick="document.getElementById('add_film').value='{{ el.id }}'"
-                                            form="add_film_form">Добавить
-                                    </button></div>
+                                <div class="movie-snippet">
+                                    <img src="{{ el.0 }}">
+                                    <div class="movie-snippet__details">
+                                        <div class="movie-snippet__head">
+                                            <div class="movie-snippet__title-wrapper">
+                                                <a class="movie-snippet__title"
+                                                   href="https://www.imdb.com/title/tt{{ el.1.id }}/"
+                                                   style="color:#000000; text-decoration:none; line-height: 1.5;">{{ el.1.title }}</a>
+                                                <!--<div class="movie-snippet__subtitle"><h3
+                                                        class="movie-snippet__original-title">Odishon</h3><span
+                                                        class="movie-snippet__year">1999</span></div>
+                                                <div class="movie-snippet__description">ужасы, драма, детектив</div>-->
+                                                <div>
+                                                    <button onclick="document.getElementById('add_film').value='{{ el.1.id }}'"
+                                                            form="add_film_form" class="btn2">Добавить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                             <form role="form" method="POST" id='dell_film_form'>

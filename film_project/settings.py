@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 from .secr_token import SECRET_KEY
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,6 +31,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "django_rq",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -119,6 +121,35 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/'
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'PASSWORD': 'some-password',
+        'DEFAULT_TIMEOUT': 360,
+    },
+    'with-sentinel': {
+        'SENTINELS': [('localhost', 26736), ('localhost', 26737)],
+        'MASTER_NAME': 'redismaster',
+        'DB': 0,
+        'PASSWORD': 'secret',
+        'SOCKET_TIMEOUT': None,
+        'CONNECTION_KWARGS': {
+            'socket_connect_timeout': 0.3
+        },
+    },
+    'high': {
+        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
+        'DEFAULT_TIMEOUT': 500,
+    },
+    'low': {
+        'HOST': 'localhost',
+        'PORT': 6000,
+        'DB': 0,
+    }
+}
+
+#uvicorn film_project.asgi:application
