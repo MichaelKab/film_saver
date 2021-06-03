@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*
 """views"""
 import os
+import asyncio
+from asgiref.sync import async_to_sync, sync_to_async
 import requests
 import csv
 # from django.contrib.auth import authenticate, login
@@ -15,6 +17,13 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from .models import Film, Film_with_user, User
+import time
+from django_rq import job
+#from rq import use_connection, Queue
+
+@job("default")
+def myfunc(x, y):
+    return x * y
 
 
 def add_film(title_id, request):
@@ -37,6 +46,8 @@ def add_film(title_id, request):
         else:
             film.budget = details.budget
         film.rating = details.rating
+        if film.rating is None:
+            film.rating = 11
         # print(details.sound_mix)
         # print("time:", details.film_length," ### ", details.runtime)
         print(list(details.runtime), details.runtime)
@@ -56,12 +67,12 @@ def add_film(title_id, request):
         if "episodes" in string_runtime:
             print("!!!")
 
-            print(string_runtime, string_duration.split("episodes"))
-            print(int(list_string_duration[0]) * int(list_string_duration[1]))
+            #print(string_runtime, string_duration.split("episodes"))
+            #print(int(list_string_duration[0]) * int(list_string_duration[1]))
             film.duration = int(list_string_duration[0]) * int(list_string_duration[1])
         else:
             film.duration = max(list_string_duration)
-        print(list_string_duration)
+        #print(list_string_duration)
         # print(dur_str)
         # print(" ### ", details.rating)
         # print(details.imdb_movie_metadata)
@@ -77,45 +88,93 @@ def add_film(title_id, request):
         film_with_user.film = film
         film_with_user.save()
 
+    #use_connection()
+    from .worker import conn
+    """
+    q = Queue(connection=conn)
+    from .utils import count_words_at_url
+    #result = q.enqueue(count_words_at_url, 'http://heroku.com')
+    #print(result)
+    r = q.enqueue(myfunc, 318, 62)
+    print(r.return_value)
+    time.sleep(2)
+    print(r.return_value)
+    """
+
 
 @login_required(login_url='/login/')
 def main(request):
     check_bad = False
     list_find_films = []
     list_id_films = []
+    """import django_rq
+    import redis
+    my_connection = redis.Redis(host='127.0.0.1', port=58848)
+    use_connection(my_connection)
+    qe = django_rq.get_queue('default'qe)
+    print(qe)
+    el = qe.enqueue(myfunc, (32, 12))
+    print(el)"""
     if request.method == "POST":
         print(request.POST.get("add_film"))
         if request.POST.get("add_film") is not None:
             title_id = request.POST.get("add_film")
+            #loop = asyncio.get_event_loop()
+            #asyncio.set_event_loop(loop)
+            #args_add_film = [title_id, request]
+            #loop.create_task(add_film(*args_add_film))
+            #return HttpResponseRedirect("/")
             add_film(title_id, request)
             user = User.objects.get(id=request.user.id)
             print(request.POST.get("add_film"))
-            films = Film_with_user.objects.filter(user=user)
+            """films = Film_with_user.objects.filter(user=user)
             all_durations = 0
             for film in films:
                 all_durations += film.film.duration
             all_durations_h = round(all_durations / 60, 2)
             return render(request, 'main.html',
                           {"all_durations_h": all_durations_h, "films": films,
-                           "all_durations": all_durations})
+                           "all_durations": all_durations})"""
+
         if request.POST.get("del_film") is not None:
             title_id = request.POST.get("del_film")
             user = User.objects.get(id=request.user.id)
             film = Film.objects.get(id_title=title_id)
             film_user = Film_with_user.objects.get(user=user, film=film)
             film_user.delete()
+
         if request.POST.get("title") is not None:
             imdb_cl = imdb.IMDb()
             name = request.POST.get("title")
             search = imdb_cl.search_movie(name)
             # print(dir(search))
+
             for i in search:
+                from bs4 import BeautifulSoup
                 page = requests.get(f'https://www.imdb.com/title/tt{i.movieID}/')
+                soup = BeautifulSoup(page.text, 'lxml')
+                class_name = "Media__PosterContainer-sc-1x98dcb-1 dGdktI"
+                quotes = soup.find('div', class_=class_name)
+                urls = []
+                normal_img = ''
+                if quotes is not None:
+                    a = quotes.find("a")
+                    href = a.get("href").split("?")
+                    href = href[0]
+                    img_page = requests.get(f'https://www.imdb.com{href}')
+                    soup2 = BeautifulSoup(img_page.text, 'lxml')
+                    url_img = soup2.find_all('img', class_="MediaViewerImagestyles__PortraitImage-sc-1qk433p-0 bnaOri")
+                    for img in url_img:
+                        normal_img = img.get("src")
+                        #print(normal_img)
+
                 if "Runtime" in page.text:
                     small_dict_films = {}
                     small_dict_films.update({"id": i.movieID})
                     small_dict_films.update({"title": i})
-                    list_find_films.append(small_dict_films)
+                    how_to_find_film = [normal_img, small_dict_films]
+                    list_find_films.append(how_to_find_film)
+
     user = User.objects.get(id=request.user.id)
     films = Film_with_user.objects.filter(user=user)
     all_durations = 0
@@ -125,7 +184,7 @@ def main(request):
     return render(request, 'main.html', {"films": films, "all_durations": all_durations,
                                          "check_bad": check_bad, "all_durations_h": all_durations_h,
                                          "list_find_films": list_find_films,
-                                         "list_id_films": list_id_films})
+                                         "list_id_films": list_id_films,})
 
 
 class SignUpView(generic.CreateView):
