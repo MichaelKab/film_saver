@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*
 """views"""
 import os
-import asyncio
-from asgiref.sync import async_to_sync, sync_to_async
 import requests
 import csv
-# from django.contrib.auth import authenticate, login
-# from django.http import HttpResponse
-# from django.http import HttpResponseNotFound
 import imdb
+from bs4 import BeautifulSoup
 from imdby.imdb import imdb as search_film_detail
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -17,9 +13,18 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from .models import Film, Film_with_user, User
-import time
 from django_rq import job
-#from rq import use_connection, Queue
+
+'''
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponse
+from django.http import HttpResponseNotFound
+import asyncio
+from asgiref.sync import async_to_sync, sync_to_async
+from rq import use_connection, Queue
+import time
+'''
+
 
 @job("default")
 def myfunc(x, y):
@@ -67,12 +72,12 @@ def add_film(title_id, request):
         if "episodes" in string_runtime:
             print("!!!")
 
-            #print(string_runtime, string_duration.split("episodes"))
-            #print(int(list_string_duration[0]) * int(list_string_duration[1]))
+            # print(string_runtime, string_duration.split("episodes"))
+            # print(int(list_string_duration[0]) * int(list_string_duration[1]))
             film.duration = int(list_string_duration[0]) * int(list_string_duration[1])
         else:
             film.duration = max(list_string_duration)
-        #print(list_string_duration)
+        # print(list_string_duration)
         # print(dur_str)
         # print(" ### ", details.rating)
         # print(details.imdb_movie_metadata)
@@ -87,10 +92,9 @@ def add_film(title_id, request):
         film_with_user.user = User.objects.get(id=request.user.id)
         film_with_user.film = film
         film_with_user.save()
-
-    #use_connection()
-    from .worker import conn
     """
+    use_connection()
+    from .worker import conn
     q = Queue(connection=conn)
     from .utils import count_words_at_url
     #result = q.enqueue(count_words_at_url, 'http://heroku.com')
@@ -107,6 +111,7 @@ def main(request):
     check_bad = False
     list_find_films = []
     list_id_films = []
+    string_genre = ''
     """import django_rq
     import redis
     my_connection = redis.Redis(host='127.0.0.1', port=58848)
@@ -119,22 +124,12 @@ def main(request):
         print(request.POST.get("add_film"))
         if request.POST.get("add_film") is not None:
             title_id = request.POST.get("add_film")
-            #loop = asyncio.get_event_loop()
-            #asyncio.set_event_loop(loop)
-            #args_add_film = [title_id, request]
-            #loop.create_task(add_film(*args_add_film))
-            #return HttpResponseRedirect("/")
+            # loop = asyncio.get_event_loop()
+            # asyncio.set_event_loop(loop)
+            # args_add_film = [title_id, request]
+            # loop.create_task(add_film(*args_add_film))
+            # return HttpResponseRedirect("/")
             add_film(title_id, request)
-            user = User.objects.get(id=request.user.id)
-            print(request.POST.get("add_film"))
-            """films = Film_with_user.objects.filter(user=user)
-            all_durations = 0
-            for film in films:
-                all_durations += film.film.duration
-            all_durations_h = round(all_durations / 60, 2)
-            return render(request, 'main.html',
-                          {"all_durations_h": all_durations_h, "films": films,
-                           "all_durations": all_durations})"""
 
         if request.POST.get("del_film") is not None:
             title_id = request.POST.get("del_film")
@@ -150,29 +145,37 @@ def main(request):
             # print(dir(search))
 
             for i in search:
-                from bs4 import BeautifulSoup
                 page = requests.get(f'https://www.imdb.com/title/tt{i.movieID}/')
                 soup = BeautifulSoup(page.text, 'lxml')
                 class_name = "Media__PosterContainer-sc-1x98dcb-1 dGdktI"
-                quotes = soup.find('div', class_=class_name)
-                urls = []
-                normal_img = ''
-                if quotes is not None:
-                    a = quotes.find("a")
-                    href = a.get("href").split("?")
-                    href = href[0]
-                    img_page = requests.get(f'https://www.imdb.com{href}')
-                    soup2 = BeautifulSoup(img_page.text, 'lxml')
-                    url_img = soup2.find_all('img', class_="MediaViewerImagestyles__PortraitImage-sc-1qk433p-0 bnaOri")
-                    for img in url_img:
-                        normal_img = img.get("src")
-                        #print(normal_img)
 
                 if "Runtime" in page.text:
+                    quotes = soup.find('div', class_=class_name)
+                    normal_img = ''
+                    if quotes is not None:
+                        a = quotes.find("a")
+                        href = a.get("href").split("?")
+                        href = href[0]
+                        img_page = requests.get(f'https://www.imdb.com{href}')
+                        soup2 = BeautifulSoup(img_page.text, 'lxml')
+                        url_img = soup2.find_all('img',
+                                                 class_="MediaViewerImagestyles__PortraitImage-sc-1qk433p-0 bnaOri")
+                        for img in url_img:
+                            normal_img = img.get("src")
+                            break
+                    genres_a = soup.find_all('a',
+                                             class_="GenresAndPlot__GenreChip-cum89p-5 bRcVmb ipc-chip ipc-chip--on-baseAlt")
+                    string_genre = ''
+                    for genre_a in genres_a:
+                        genre = genre_a.find("span").text
+                        # print(genre)
+                        string_genre += f"{genre} "
+                    if len(string_genre) > 2:
+                        string_genre = string_genre[0:-2]
                     small_dict_films = {}
                     small_dict_films.update({"id": i.movieID})
                     small_dict_films.update({"title": i})
-                    how_to_find_film = [normal_img, small_dict_films]
+                    how_to_find_film = [normal_img, small_dict_films, string_genre]
                     list_find_films.append(how_to_find_film)
 
     user = User.objects.get(id=request.user.id)
@@ -180,11 +183,11 @@ def main(request):
     all_durations = 0
     for film in films:
         all_durations += film.film.duration
-    all_durations_h = round(all_durations / 60, 2)
+    all_durations_h = all_durations / 60
     return render(request, 'main.html', {"films": films, "all_durations": all_durations,
                                          "check_bad": check_bad, "all_durations_h": all_durations_h,
                                          "list_find_films": list_find_films,
-                                         "list_id_films": list_id_films,})
+                                         "list_id_films": list_id_films, "genres": string_genre})
 
 
 class SignUpView(generic.CreateView):
